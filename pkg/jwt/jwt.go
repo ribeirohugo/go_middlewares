@@ -102,12 +102,12 @@ func (j *JWT) Middleware(next http.Handler) http.Handler {
 		if claims, ok := token.Claims.(*jwt.MapClaims); ok {
 			userRole, ok := jwtClaims["role"]
 			if ok {
-				j.checkRolePermissions(r, userRole.(string))
-
-				// Store the claims in the request context for use in the handler.
-				ctx := context.WithValue(r.Context(), j.claimsKeys, claims)
-				next.ServeHTTP(w, r.WithContext(ctx))
-				return
+				if j.checkRolePermissions(r, userRole.(string)) {
+					// Store the claims in the request context for use in the handler.
+					ctx := context.WithValue(r.Context(), j.claimsKeys, claims)
+					next.ServeHTTP(w, r.WithContext(ctx))
+					return
+				}
 			}
 		}
 
