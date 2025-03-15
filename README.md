@@ -1,7 +1,7 @@
 # Go Middlewares
 
-Go Middlewares is a packages repository that aggregates many standard middlewares developed in Golang
-that are commonly used in different applications.
+Go Middlewares is a packages repository, developed in Golang, that aggregates standard middlewares
+that are commonly used by different applications.
 
 ## 1.1. Middlewares
 
