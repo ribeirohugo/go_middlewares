@@ -20,29 +20,43 @@ const (
 )
 
 // JWT is a JWTMiddleware that holds authentication data and dependencies.
+//
+// adminRole is the maximum permission role, that allows everything by default.
+// claimsKey is the authentication key used by claims.
+// tokenSecret the secret key to verify the integrity and authenticity of the JWT
+// tokenMaxAge is the max duration of a token, in nanoseconds.
+// skipList is the list of endpoints that are ignored for JWT verification.
+// permissionsMap is the list of endpoints, associated to the allowed permission roles.
 type JWT struct {
-	adminRole     string
-	claimsKeys    string
-	permissions   map[string][]string
-	skipList      []string
-	tokenDuration time.Duration
-	tokenSecret   string
+	adminRole      string
+	claimsKeys     string
+	permissionsMap map[string][]string
+	skipList       []string
+	tokenDuration  time.Duration
+	tokenSecret    string
 }
 
 // NewJWT is a JWT middleware constructor.
+//
+// adminRole is the maximum permission role, that allows everything by default.
+// claimsKey is the authentication key used by claims.
+// tokenSecret the secret key to verify the integrity and authenticity of the JWT
+// tokenMaxAge is the max duration of a token, in nanoseconds.
+// skipList is the list of endpoints that are ignored for JWT verification.
+// permissionsMap is the list of endpoints, associated to the allowed permission roles.
 func NewJWT(
 	adminRole, claimsKey, tokenSecret string,
 	tokenMaxAge int64,
 	skipList []string,
-	permissions map[string][]string,
+	permissionsMap map[string][]string,
 ) JWT {
 	return JWT{
-		adminRole:     adminRole,
-		claimsKeys:    claimsKey,
-		permissions:   permissions,
-		skipList:      skipList,
-		tokenDuration: time.Duration(tokenMaxAge),
-		tokenSecret:   tokenSecret,
+		adminRole:      adminRole,
+		claimsKeys:     claimsKey,
+		permissionsMap: permissionsMap,
+		skipList:       skipList,
+		tokenDuration:  time.Duration(tokenMaxAge),
+		tokenSecret:    tokenSecret,
 	}
 }
 
@@ -104,16 +118,16 @@ func (j *JWT) Middleware(next http.Handler) http.Handler {
 // checkRolePermissions verifies if current user role is allowed to access current URL request
 // according to permission mapping previously defined.
 func (j *JWT) checkRolePermissions(r *http.Request, userRole string) bool {
-	//if userRole == model.RoleAdmin.String() {
-	//	return true
-	//}
+	if userRole == j.adminRole {
+		return true
+	}
 
 	var (
 		hasPrefix = false
 		allowed   = false
 	)
 
-	for k, roles := range j.permissions {
+	for k, roles := range j.permissionsMap {
 		if strings.HasPrefix(r.URL.Path, k) {
 			hasPrefix = true
 
