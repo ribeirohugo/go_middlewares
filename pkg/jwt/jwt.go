@@ -38,7 +38,7 @@ type JWT struct {
 	TokenSecret    string
 }
 
-// NewJWT is a JWT middleware constructor.
+// New is a JWT middleware constructor.
 //
 // adminRole is the maximum permission role, that allows everything by default.
 // claimsKey is the authentication key used by claims.
@@ -46,7 +46,7 @@ type JWT struct {
 // tokenMaxAge is the max duration of a token, in nanoseconds.
 // skipList is the list of endpoints that are ignored for JWT verification.
 // permissionsMap is the list of endpoints, associated to the allowed permission roles.
-func NewJWT(
+func New(
 	adminRole, claimsKey, tokenSecret string,
 	tokenMaxAge int,
 	skipList []string,

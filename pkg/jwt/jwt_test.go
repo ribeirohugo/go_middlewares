@@ -86,7 +86,7 @@ func TestJWT_Middleware(t *testing.T) {
 			}
 
 			// Create JWT middleware
-			jwtMiddleware := NewJWT(
+			jwtMiddleware := New(
 				"admin",                                  // Admin role
 				"claims",                                 // Claims key
 				jwtSecret,                                // Token secret
