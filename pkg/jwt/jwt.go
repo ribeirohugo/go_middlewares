@@ -28,12 +28,12 @@ const (
 // skipList is the list of endpoints that are ignored for JWT verification.
 // permissionsMap is the list of endpoints, associated to the allowed permission roles.
 type JWT struct {
-	adminRole      string
-	claimsKeys     string
-	permissionsMap map[string][]string
-	skipList       []string
-	tokenDuration  time.Duration
-	tokenSecret    string
+	AdminRole      string
+	ClaimsKey      string
+	PermissionsMap map[string][]string
+	SkipList       []string
+	TokenDuration  time.Duration
+	TokenSecret    string
 }
 
 // NewJWT is a JWT middleware constructor.
@@ -46,17 +46,17 @@ type JWT struct {
 // permissionsMap is the list of endpoints, associated to the allowed permission roles.
 func NewJWT(
 	adminRole, claimsKey, tokenSecret string,
-	tokenMaxAge int64,
+	tokenMaxAge int,
 	skipList []string,
 	permissionsMap map[string][]string,
 ) JWT {
 	return JWT{
-		adminRole:      adminRole,
-		claimsKeys:     claimsKey,
-		permissionsMap: permissionsMap,
-		skipList:       skipList,
-		tokenDuration:  time.Duration(tokenMaxAge),
-		tokenSecret:    tokenSecret,
+		AdminRole:      adminRole,
+		ClaimsKey:      claimsKey,
+		PermissionsMap: permissionsMap,
+		SkipList:       skipList,
+		TokenDuration:  time.Duration(tokenMaxAge),
+		TokenSecret:    tokenSecret,
 	}
 }
 
@@ -65,8 +65,8 @@ func (j *JWT) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 
-		for i := range j.skipList {
-			if strings.HasPrefix(r.URL.Path, j.skipList[i]) {
+		for i := range j.SkipList {
+			if strings.HasPrefix(r.URL.Path, j.SkipList[i]) {
 				// Skip JWT verification for endpoint requests
 				next.ServeHTTP(w, r)
 				return
@@ -86,7 +86,7 @@ func (j *JWT) Middleware(next http.Handler) http.Handler {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 			}
 
-			return []byte(j.tokenSecret), nil
+			return []byte(j.TokenSecret), nil
 		})
 		if err != nil {
 			if err.Error() == "Token is expired" {
@@ -104,7 +104,7 @@ func (j *JWT) Middleware(next http.Handler) http.Handler {
 			if ok {
 				if j.checkRolePermissions(r, userRole.(string)) {
 					// Store the claims in the request context for use in the handler.
-					ctx := context.WithValue(r.Context(), j.claimsKeys, claims)
+					ctx := context.WithValue(r.Context(), j.ClaimsKey, claims)
 					next.ServeHTTP(w, r.WithContext(ctx))
 					return
 				}
@@ -118,7 +118,7 @@ func (j *JWT) Middleware(next http.Handler) http.Handler {
 // checkRolePermissions verifies if current user role is allowed to access current URL request
 // according to permission mapping previously defined.
 func (j *JWT) checkRolePermissions(r *http.Request, userRole string) bool {
-	if userRole == j.adminRole {
+	if userRole == j.AdminRole {
 		return true
 	}
 
@@ -127,7 +127,7 @@ func (j *JWT) checkRolePermissions(r *http.Request, userRole string) bool {
 		allowed   = false
 	)
 
-	for k, roles := range j.permissionsMap {
+	for k, roles := range j.PermissionsMap {
 		if strings.HasPrefix(r.URL.Path, k) {
 			hasPrefix = true
 
