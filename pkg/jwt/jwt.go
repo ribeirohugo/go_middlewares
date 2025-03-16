@@ -14,6 +14,8 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+type claimsKey string
+
 const (
 	expiredTokenMessage = "token has expired"
 	unauthorizedMessage = "unauthorized"
@@ -104,7 +106,7 @@ func (j *JWT) Middleware(next http.Handler) http.Handler {
 			if ok {
 				if j.checkRolePermissions(r, userRole.(string)) {
 					// Store the claims in the request context for use in the handler.
-					ctx := context.WithValue(r.Context(), j.ClaimsKey, claims)
+					ctx := context.WithValue(r.Context(), claimsKey(j.ClaimsKey), claims)
 					next.ServeHTTP(w, r.WithContext(ctx))
 					return
 				}
