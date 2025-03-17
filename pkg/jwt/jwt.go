@@ -14,8 +14,6 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type claimsKey string
-
 const (
 	expiredTokenMessage = "token has expired"
 	unauthorizedMessage = "unauthorized"
