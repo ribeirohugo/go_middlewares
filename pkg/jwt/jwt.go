@@ -31,7 +31,7 @@ const (
 // permissionsMap is the list of endpoints, associated to the allowed permission roles.
 type JWT struct {
 	AdminRole      string
-	ClaimsKey      string
+	ClaimsKey      interface{}
 	PermissionsMap map[string][]string
 	SkipList       []string
 	TokenDuration  time.Duration
@@ -106,7 +106,7 @@ func (j *JWT) Middleware(next http.Handler) http.Handler {
 			if ok {
 				if j.checkRolePermissions(r, userRole.(string)) {
 					// Store the claims in the request context for use in the handler.
-					ctx := context.WithValue(r.Context(), claimsKey(j.ClaimsKey), claims)
+					ctx := context.WithValue(r.Context(), j.ClaimsKey, claims)
 					next.ServeHTTP(w, r.WithContext(ctx))
 					return
 				}
