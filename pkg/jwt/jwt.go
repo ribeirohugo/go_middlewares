@@ -46,8 +46,8 @@ type JWT struct {
 // permissionsMap is the list of endpoints, associated to the allowed permission roles.
 func New(
 	adminRole, tokenSecret string,
-	claimsKey interface{},
 	tokenMaxAge int,
+	claimsKey interface{},
 	skipList []string,
 	permissionsMap map[string][]string,
 ) JWT {
@@ -112,7 +112,7 @@ func (j *JWT) Middleware(next http.Handler) http.Handler {
 			}
 		}
 
-		j.error(w, "Unauthorized")
+		j.error(w, unauthorizedMessage)
 	})
 }
 
