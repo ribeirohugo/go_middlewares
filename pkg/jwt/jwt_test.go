@@ -69,7 +69,7 @@ func TestJWT_Middleware(t *testing.T) {
 			role:           "guest",
 			requestPath:    "/admin",
 			expectedStatus: http.StatusUnauthorized,
-			expectedBody:   `{"message":"Unauthorized"}`,
+			expectedBody:   `{"message":"unauthorized"}`,
 		},
 	}
 
@@ -88,9 +88,9 @@ func TestJWT_Middleware(t *testing.T) {
 			// Create JWT middleware
 			jwtMiddleware := New(
 				"admin",                                  // Admin role
-				"claims",                                 // Claims key
 				jwtSecret,                                // Token secret
 				3600,                                     // Token max age
+				"claims",                                 // Claims key
 				tt.skipList,                              // Skip list
 				map[string][]string{"/admin": {"admin"}}, // Permissions map
 			)

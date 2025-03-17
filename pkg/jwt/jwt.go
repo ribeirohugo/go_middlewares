@@ -14,8 +14,6 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type claimsKey string
-
 const (
 	expiredTokenMessage = "token has expired"
 	unauthorizedMessage = "unauthorized"
@@ -31,7 +29,7 @@ const (
 // permissionsMap is the list of endpoints, associated to the allowed permission roles.
 type JWT struct {
 	AdminRole      string
-	ClaimsKey      string
+	ClaimsKey      interface{}
 	PermissionsMap map[string][]string
 	SkipList       []string
 	TokenDuration  time.Duration
@@ -47,8 +45,9 @@ type JWT struct {
 // skipList is the list of endpoints that are ignored for JWT verification.
 // permissionsMap is the list of endpoints, associated to the allowed permission roles.
 func New(
-	adminRole, claimsKey, tokenSecret string,
+	adminRole, tokenSecret string,
 	tokenMaxAge int,
+	claimsKey interface{},
 	skipList []string,
 	permissionsMap map[string][]string,
 ) JWT {
@@ -106,14 +105,14 @@ func (j *JWT) Middleware(next http.Handler) http.Handler {
 			if ok {
 				if j.checkRolePermissions(r, userRole.(string)) {
 					// Store the claims in the request context for use in the handler.
-					ctx := context.WithValue(r.Context(), claimsKey(j.ClaimsKey), claims)
+					ctx := context.WithValue(r.Context(), j.ClaimsKey, claims)
 					next.ServeHTTP(w, r.WithContext(ctx))
 					return
 				}
 			}
 		}
 
-		j.error(w, "Unauthorized")
+		j.error(w, unauthorizedMessage)
 	})
 }
 
