@@ -45,7 +45,8 @@ type JWT struct {
 // skipList is the list of endpoints that are ignored for JWT verification.
 // permissionsMap is the list of endpoints, associated to the allowed permission roles.
 func New(
-	adminRole, claimsKey, tokenSecret string,
+	adminRole, tokenSecret string,
+	claimsKey interface{},
 	tokenMaxAge int,
 	skipList []string,
 	permissionsMap map[string][]string,
