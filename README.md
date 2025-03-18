@@ -13,3 +13,8 @@ access control and user verification.
 
 [CORS](pkg/cors) is a middleware responsible for handling Cross-Origin Resource Sharing (CORS) policies
 by allowing or blocking HTTP requests based on their origin.
+
+## 1.3. Logger Middleware
+
+[Logger](pkg/logger) is a middleware responsible for logging HTTP request data, including the request method,
+URL, and remote address. It helps track incoming requests and provides useful debugging information.
