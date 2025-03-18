@@ -85,6 +85,28 @@ func TestLogger_Error(t *testing.T) {
 	})
 }
 
+func TestMiddleware(t *testing.T) {
+	buffer := new(bytes.Buffer)
+	customLogger := log.New(buffer, "", log.LstdFlags)
+	logInstance := &Logger{logger: customLogger}
+
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	req := httptest.NewRequest("GET", "http://example.com/test", nil)
+	req.RemoteAddr = "127.0.0.1:12345" // Ensure RemoteAddr is set
+	w := httptest.NewRecorder()
+
+	middleware := logInstance.Middleware(handler)
+	middleware.ServeHTTP(w, req)
+
+	logOutput := buffer.String()
+	t.Log("Captured Log:", logOutput) // Debugging output
+
+	assert.Contains(t, logOutput, "/test - GET", "Log output does not contain expected request data")
+}
+
 func createLogger(t *testing.T) (*log.Logger, Logger) {
 	t.Helper()
 
