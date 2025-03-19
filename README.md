@@ -18,3 +18,9 @@ by allowing or blocking HTTP requests based on their origin.
 
 [Logger](pkg/logger) is a middleware responsible for logging HTTP request data, including the request method,
 URL, and remote address. It helps track incoming requests and provides useful debugging information.
+
+## 1.4. Prometheus Middleware
+
+[Prometheus](pkg/prometheus) is a middleware designed for monitoring HTTP requests by collecting key metrics
+such as request count, response duration, and status codes.
+It enables seamless integration with Prometheus for real-time performance tracking and observability.
