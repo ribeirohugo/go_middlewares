@@ -2,7 +2,7 @@ package loki
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -15,7 +15,7 @@ func TestPush(t *testing.T) {
 		assert.Equal(t, http.MethodPost, r.Method, "expected method POST")
 		assert.Equal(t, "application/json", r.Header.Get("Content-Type"), "expected Content-Type application/json")
 
-		body, err := ioutil.ReadAll(r.Body)
+		body, err := io.ReadAll(r.Body)
 		assert.NoError(t, err)
 
 		var streams Streams
