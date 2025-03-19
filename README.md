@@ -24,3 +24,9 @@ URL, and remote address. It helps track incoming requests and provides useful de
 [Prometheus](pkg/prometheus) is a middleware designed for monitoring HTTP requests by collecting key metrics
 such as request count, response duration, and status codes.
 It enables seamless integration with Prometheus for real-time performance tracking and observability.
+
+## 1.5. Loki Middleware
+
+[Loki](pkg/loki) is a middleware responsible for logging HTTP request data to a Loki server.
+It captures essential request details such as the request method, URL, and remote address, ensuring structured
+logging for better observability and debugging.

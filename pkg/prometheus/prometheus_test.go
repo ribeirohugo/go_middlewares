@@ -7,9 +7,12 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/stretchr/testify/assert"
 )
 
-func unregisterMetrics() {
+func unregisterMetrics(t *testing.T) {
+	t.Helper()
+
 	prometheus.Unregister(httpRequestsTotal)
 	prometheus.Unregister(httpRequestDuration)
 }
@@ -22,11 +25,9 @@ func TestHandler_Unauthorized(t *testing.T) {
 
 	p.Handler(w, r)
 
-	if w.Code != http.StatusUnauthorized {
-		t.Errorf("Expected status %d, got %d", http.StatusUnauthorized, w.Code)
-	}
+	assert.Equal(t, http.StatusUnauthorized, w.Result().StatusCode)
 
-	unregisterMetrics()
+	unregisterMetrics(t)
 }
 
 func TestHandler_Authorized(t *testing.T) {
@@ -38,11 +39,9 @@ func TestHandler_Authorized(t *testing.T) {
 
 	p.Handler(w, r)
 
-	if w.Code != http.StatusOK {
-		t.Errorf("Expected status %d, got %d", http.StatusOK, w.Code)
-	}
+	assert.Equal(t, http.StatusOK, w.Code)
 
-	unregisterMetrics()
+	unregisterMetrics(t)
 }
 
 func TestMiddleware_MetricsRecorded(t *testing.T) {
@@ -58,9 +57,7 @@ func TestMiddleware_MetricsRecorded(t *testing.T) {
 
 	handler.ServeHTTP(w, r)
 
-	if w.Code != http.StatusOK {
-		t.Errorf("Expected status %d, got %d", http.StatusOK, w.Code)
-	}
+	assert.Equal(t, http.StatusOK, w.Code)
 
-	unregisterMetrics()
+	unregisterMetrics(t)
 }

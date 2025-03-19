@@ -1,6 +1,7 @@
 # Prometheus Middleware
 
-This repository provides a Prometheus middleware for monitoring HTTP requests in a Go application. The middleware captures request counts, response times, and status codes, and exposes them via a `/metrics` endpoint.
+This repository provides a Prometheus middleware for monitoring HTTP requests in a Go application.
+The middleware captures request counts, response times, and status codes, and exposes them via a `/metrics` endpoint.
 
 ## Features
 - Tracks total HTTP requests (`http_requests_total`)
@@ -11,7 +12,7 @@ This repository provides a Prometheus middleware for monitoring HTTP requests in
 ## Installation
 
 ```sh
-go get github.com/your-repo/prometheus-middleware
+go get github.com/ribeirohugo/go_middlewares/pkg/prometheus
 ```
 
 ## Usage
