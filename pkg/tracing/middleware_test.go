@@ -1,6 +1,7 @@
 package tracing
 
 import (
+	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -18,7 +19,8 @@ func TestMiddleware(t *testing.T) {
 	// Create a test handler that simply responds with "OK"
 	testHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
+		_, err := w.Write([]byte("OK"))
+		require.NoError(t, err)
 	})
 
 	// Wrap it with the middleware
