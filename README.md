@@ -30,3 +30,9 @@ It enables seamless integration with Prometheus for real-time performance tracki
 [Loki](pkg/loki) is a middleware responsible for logging HTTP request data to a Loki server.
 It captures essential request details such as the request method, URL, and remote address, ensuring structured
 logging for better observability and debugging.
+
+## 1.6. Tracing Middleware
+[Tracing](pkg/tracing) middleware is responsible for instrumenting HTTP requests with OpenTelemetry tracing.
+It captures key request details, such as the request method, URL, and remote address, allowing for distributed
+tracing and improved observability. By integrating with OpenTelemetry, this middleware helps track request flows
+across services, making it easier to debug performance bottlenecks and failures.
