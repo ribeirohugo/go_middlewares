@@ -13,7 +13,7 @@ import (
 
 // Tempo returns an OpenTelemetry TracerProvider configured to use the OTLP exporter
 // that will send spans to the provided Tempo endpoint.
-func Tempo(ctx context.Context, url, environment, service string, secure bool) (*tracesdk.TracerProvider, error) {
+func Tempo(ctx context.Context, url, environment, service string, secure bool) (*trace.TracerProvider, error) {
 	opts := []otlptracehttp.Option{otlptracehttp.WithEndpoint(url)}
 	if !secure {
 		opts = append(opts, otlptracehttp.WithInsecure())
