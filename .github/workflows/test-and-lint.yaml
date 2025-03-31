@@ -25,11 +25,11 @@ jobs:
         run: go mod download
 
       - name: Lint
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v7
         with:
-          version: v1.64.5
-          skip-pkg-cache: true
-          skip-build-cache: true
+          version: v2.0.2
+          skip-cache: true
+          args: --config=.golangci.yml
 
       - name: Clean
         run: go clean -modcache -v
