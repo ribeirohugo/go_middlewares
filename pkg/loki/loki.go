@@ -37,7 +37,7 @@ type Streams struct {
 // Stream defines one Stream that groups many logs, for a given application.
 type Stream struct {
 	Stream map[string]string `json:"stream"`
-	Values [][]interface{}   `json:"values"`
+	Values [][]any           `json:"values"`
 }
 
 // Value defines a Loki log values.
@@ -79,7 +79,7 @@ func (l *Loki) Push(level, body string) error {
 			"app":   l.service,
 			"level": level,
 		},
-		Values: [][]interface{}{
+		Values: [][]any{
 			{
 				value.Timestamp,
 				value.Line,
