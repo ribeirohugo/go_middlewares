@@ -97,6 +97,7 @@ func (j *JWT) Middleware(next http.Handler) http.Handler {
 
 			log.Println(err)
 			j.error(w, unauthorizedMessage)
+
 			return
 		}
 
@@ -107,6 +108,7 @@ func (j *JWT) Middleware(next http.Handler) http.Handler {
 					// Store the claims in the request context for use in the handler.
 					ctx := context.WithValue(r.Context(), j.ClaimsKey, claims)
 					next.ServeHTTP(w, r.WithContext(ctx))
+
 					return
 				}
 			}

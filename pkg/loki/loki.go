@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
+	"log"
 	"net/http"
 	"time"
 )
@@ -106,11 +108,18 @@ func (l *Loki) Push(level, body string) error {
 	req.Header.Set("Authorization", "Bearer "+l.token) // Add auth token
 
 	client := &http.Client{}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+
+	defer func(Body io.ReadCloser) {
+		err = Body.Close()
+		if err != nil {
+			log.Println(err)
+		}
+	}(resp.Body)
 
 	return nil
 }
