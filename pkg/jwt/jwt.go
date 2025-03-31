@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ribeirohugo/go_middlewares/internal/model"
-
 	"github.com/golang-jwt/jwt/v5"
+
+	"github.com/ribeirohugo/go_middlewares/internal/model"
 )
 
 const (
