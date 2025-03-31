@@ -28,7 +28,9 @@ func (c CORS) Middleware(next http.Handler) http.Handler {
 			for _, allowedOrigin := range c.allowedOrigins {
 				if allowedOrigin == origin {
 					allowed = true
+
 					w.Header().Set("Access-Control-Allow-Origin", origin)
+
 					break
 				}
 			}

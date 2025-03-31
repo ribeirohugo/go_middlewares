@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ribeirohugo/go_middlewares/internal/model"
-
 	"github.com/golang-jwt/jwt/v5"
+
+	"github.com/ribeirohugo/go_middlewares/internal/model"
 )
 
 const (
@@ -29,7 +29,7 @@ const (
 // permissionsMap is the list of endpoints, associated to the allowed permission roles.
 type JWT struct {
 	AdminRole      string
-	ClaimsKey      interface{}
+	ClaimsKey      any
 	PermissionsMap map[string][]string
 	SkipList       []string
 	TokenDuration  time.Duration
@@ -47,7 +47,7 @@ type JWT struct {
 func New(
 	adminRole, tokenSecret string,
 	tokenMaxAge int,
-	claimsKey interface{},
+	claimsKey any,
 	skipList []string,
 	permissionsMap map[string][]string,
 ) JWT {
@@ -82,7 +82,7 @@ func (j *JWT) Middleware(next http.Handler) http.Handler {
 
 		jwtClaims := jwt.MapClaims{}
 
-		token, err := jwt.ParseWithClaims(tokenString, &jwtClaims, func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.ParseWithClaims(tokenString, &jwtClaims, func(token *jwt.Token) (any, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 			}
@@ -97,6 +97,7 @@ func (j *JWT) Middleware(next http.Handler) http.Handler {
 
 			log.Println(err)
 			j.error(w, unauthorizedMessage)
+
 			return
 		}
 
@@ -107,6 +108,7 @@ func (j *JWT) Middleware(next http.Handler) http.Handler {
 					// Store the claims in the request context for use in the handler.
 					ctx := context.WithValue(r.Context(), j.ClaimsKey, claims)
 					next.ServeHTTP(w, r.WithContext(ctx))
+
 					return
 				}
 			}
