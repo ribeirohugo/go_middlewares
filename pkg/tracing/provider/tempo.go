@@ -34,5 +34,6 @@ func Tempo(ctx context.Context, url, environment, service string, secure bool) (
 	)
 
 	otel.SetTracerProvider(tp)
+
 	return tp, nil
 }
