@@ -10,7 +10,7 @@ import (
 )
 
 func (j *JWT) parseClaims(ctx context.Context) (jwt.MapClaims, error) {
-	claims, ok := ctx.Value(j.Auth.ClaimsKey()).(*jwt.MapClaims)
+	claims, ok := ctx.Value(j.auth.ClaimsKey()).(*jwt.MapClaims)
 	if !ok {
 		return nil, fmt.Errorf("token not found in context")
 	}
@@ -47,5 +47,5 @@ func (j *JWT) GetClaims(ctx context.Context) (authentication.Claims, error) {
 
 // Logout removes claims from the context, effectively logging the user out.
 func (j *JWT) Logout(ctx context.Context) context.Context {
-	return context.WithValue(ctx, j.Auth.ClaimsKey(), nil)
+	return context.WithValue(ctx, j.auth.ClaimsKey(), nil)
 }

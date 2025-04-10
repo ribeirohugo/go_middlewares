@@ -27,7 +27,7 @@ type JWT struct {
 	TokenDuration  time.Duration
 	TokenSecret    string
 
-	Auth authentication.Auth
+	auth authentication.Auth
 }
 
 // New is a JWT middleware constructor.
@@ -44,6 +44,7 @@ func New(
 	claimsKey any,
 	skipList []string,
 	permissionsMap map[string][]string,
+	auth authentication.Auth,
 ) JWT {
 	return JWT{
 		AdminRole:      adminRole,
@@ -52,5 +53,6 @@ func New(
 		SkipList:       skipList,
 		TokenDuration:  time.Duration(tokenMaxAge),
 		TokenSecret:    tokenSecret,
+		auth:           auth,
 	}
 }

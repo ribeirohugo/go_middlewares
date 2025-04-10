@@ -1,6 +1,7 @@
 package jwt
 
 import (
+	"github.com/ribeirohugo/go_middlewares/pkg/authentication"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -93,6 +94,7 @@ func TestJWT_Middleware(t *testing.T) {
 				"claims",                                 // Claims key
 				tt.skipList,                              // Skip list
 				map[string][]string{"/admin": {"admin"}}, // Permissions map
+				authentication.Auth{},
 			)
 
 			// Create request
