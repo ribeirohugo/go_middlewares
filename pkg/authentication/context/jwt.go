@@ -9,7 +9,7 @@ import (
 	"github.com/ribeirohugo/go_middlewares/pkg/authentication"
 )
 
-func (j JWT) parseClaims(ctx context.Context) (jwt.MapClaims, error) {
+func (j *JWT) parseClaims(ctx context.Context) (jwt.MapClaims, error) {
 	claims, ok := ctx.Value(j.Auth.ClaimsKey()).(*jwt.MapClaims)
 	if !ok {
 		return nil, fmt.Errorf("token not found in context")
@@ -19,7 +19,7 @@ func (j JWT) parseClaims(ctx context.Context) (jwt.MapClaims, error) {
 }
 
 // GetClaims allows to extract claims from context.
-func (j JWT) GetClaims(ctx context.Context) (authentication.Claims, error) {
+func (j *JWT) GetClaims(ctx context.Context) (authentication.Claims, error) {
 	claims, err := j.parseClaims(ctx)
 	if err != nil {
 		return authentication.Claims{}, err
@@ -46,6 +46,6 @@ func (j JWT) GetClaims(ctx context.Context) (authentication.Claims, error) {
 }
 
 // Logout removes claims from the context, effectively logging the user out.
-func (j JWT) Logout(ctx context.Context) context.Context {
+func (j *JWT) Logout(ctx context.Context) context.Context {
 	return context.WithValue(ctx, j.Auth.ClaimsKey(), nil)
 }
