@@ -38,8 +38,8 @@ func (j *JWT) GetClaims(ctx context.Context) (authentication.Claims, error) {
 	userRole := role.(string)
 
 	parsedClaims := authentication.Claims{
-		UserID: userID.(string),
-		Role:   userRole,
+		Subject: userID.(string),
+		Role:    userRole,
 	}
 
 	return parsedClaims, err
