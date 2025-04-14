@@ -1,12 +1,12 @@
 package jwt
 
 import (
-	"github.com/ribeirohugo/go_middlewares/pkg/authentication"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/ribeirohugo/go_middlewares/pkg/authentication"
 	"github.com/stretchr/testify/assert"
 )
 

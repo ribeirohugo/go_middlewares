@@ -4,15 +4,13 @@ import "github.com/golang-jwt/jwt/v5"
 
 // Auth is responsible for common operations with authentication and JWT.
 type Auth struct {
-	token     string
 	claimsKey ClaimsKey
 }
 
 // New is an Auth constructor.
-func New(token, key string) Auth {
+func New(token string) Auth {
 	return Auth{
-		token:     token,
-		claimsKey: ClaimsKey(key),
+		claimsKey: ClaimsKey(token),
 	}
 }
 
