@@ -24,8 +24,8 @@ func NewMapClaims(subject, issuer, audience, role string, tokenDuration time.Dur
 		"sub":  subject,
 		"iss":  issuer,
 		"aud":  audience,
-		"exp":  time.Now().Add(time.Duration(tokenDuration) * time.Second).Unix(),
 		"iat":  time.Now().Unix(),
+		"exp":  time.Now().Add(tokenDuration).Unix(),
 		"role": role,
 	}
 }

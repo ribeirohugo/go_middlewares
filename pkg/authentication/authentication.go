@@ -43,7 +43,7 @@ func (a *Auth) SignedToken(claims jwt.MapClaims) (string, error) {
 func (a *Auth) ClaimsSignedToken(subject, issuer, audience, role string) (string, error) {
 	claims := NewMapClaims(subject, issuer, audience, role, a.TokenDuration)
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	token := jwt.NewWithClaims(a.SigningMethod, claims)
 
-	return token.SignedString(token)
+	return token.SignedString(a.TokenSecret)
 }
