@@ -1,10 +1,10 @@
 package authentication
 
 import (
-	"github.com/google/uuid"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 // ClaimsKey is a custom context key for storing JWT claims.
@@ -50,6 +50,7 @@ func NewClaims(subject, issuer, audience, role string, tokenDuration int) Claims
 	}
 }
 
+// Claims defines the JWT payload with standard claims and a custom user role.
 type Claims struct {
 	ID        string `json:"id"`
 	Subject   string `json:"sub"`

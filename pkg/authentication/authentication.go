@@ -45,5 +45,5 @@ func (a *Auth) ClaimsSignedToken(subject, issuer, audience, role string) (string
 
 	token := jwt.NewWithClaims(a.SigningMethod, claims)
 
-	return token.SignedString(a.TokenSecret)
+	return token.SignedString([]byte(a.TokenSecret))
 }

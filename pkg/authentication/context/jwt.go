@@ -3,9 +3,10 @@ package jwt
 import (
 	"context"
 	"fmt"
-	"github.com/ribeirohugo/go_middlewares/pkg/authentication"
 
 	"github.com/golang-jwt/jwt/v5"
+
+	"github.com/ribeirohugo/go_middlewares/pkg/authentication"
 )
 
 func (j *JWT) parseClaims(ctx context.Context) (jwt.MapClaims, error) {
