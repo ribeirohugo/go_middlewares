@@ -11,14 +11,15 @@ type Auth struct {
 	ClaimsKey     ClaimsKey
 	SigningMethod jwt.SigningMethod
 	TokenDuration time.Duration
+	TokenSecret   string
 }
 
 // New is an Auth constructor.
 func New(token string, tokenDuration int, method jwt.SigningMethod) Auth {
 	return Auth{
 		ClaimsKey:     ClaimsKey(token),
-		TokenDuration: time.Duration(tokenDuration) * time.Second,
 		SigningMethod: method,
+		TokenDuration: time.Duration(tokenDuration) * time.Second,
 	}
 }
 
@@ -36,4 +37,13 @@ func (a *Auth) SignedToken(claims jwt.MapClaims) (string, error) {
 	token := jwt.NewWithClaims(a.SigningMethod, claims)
 
 	return token.SignedString([]byte(a.ClaimsKey))
+}
+
+// ClaimsSignedToken SignedToken generates and signs a JWT using the provided secret and claims.
+func (a *Auth) ClaimsSignedToken(subject, issuer, audience, role string) (string, error) {
+	claims := NewMapClaims(subject, issuer, audience, role, a.TokenDuration)
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	return token.SignedString(token)
 }

@@ -3,6 +3,7 @@ package jwt
 import (
 	"context"
 	"fmt"
+	"github.com/ribeirohugo/go_middlewares/pkg/authentication"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -17,23 +18,40 @@ func (j *JWT) parseClaims(ctx context.Context) (jwt.MapClaims, error) {
 }
 
 // GetClaims allows to extract claims from context.
-func (j *JWT) GetClaims(ctx context.Context) (jwt.Claims, error) {
+func (j *JWT) GetClaims(ctx context.Context) (authentication.Claims, error) {
 	claims, err := j.parseClaims(ctx)
 	if err != nil {
-		return jwt.MapClaims{}, err
+		return authentication.Claims{}, err
 	}
 
-	_, ok := claims["sub"]
+	sub, ok := claims["sub"]
 	if !ok {
-		return jwt.MapClaims{}, fmt.Errorf("user id wasn't found in claims")
+		return authentication.Claims{}, fmt.Errorf("user id wasn't found in claims")
 	}
 
-	_, ok = claims["role"]
+	role, ok := claims["role"]
 	if !ok {
-		return jwt.MapClaims{}, fmt.Errorf("role wasn't found in claims")
+		return authentication.Claims{}, fmt.Errorf("role wasn't found in claims")
 	}
 
-	return claims, err
+	issuer, ok := claims["iss"]
+	if !ok {
+		issuer = ""
+	}
+
+	audience, ok := claims["iss"]
+	if !ok {
+		audience = ""
+	}
+
+	authClaims := authentication.Claims{
+		Subject:  sub.(string),
+		Role:     role.(string),
+		Issuer:   issuer.(string),
+		Audience: audience.(string),
+	}
+
+	return authClaims, err
 }
 
 // Logout removes claims from the context, effectively logging the user out.

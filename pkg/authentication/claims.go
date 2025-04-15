@@ -1,6 +1,7 @@
 package authentication
 
 import (
+	"github.com/google/uuid"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -9,7 +10,7 @@ import (
 // ClaimsKey is a custom context key for storing JWT claims.
 type ClaimsKey string
 
-// Claims is a jwt.MapClaims constructor.
+// NewMapClaims is a jwt.MapClaims constructor.
 //
 // It holds the following attributes:
 // Subject "sub" - user ID
@@ -17,8 +18,9 @@ type ClaimsKey string
 // Audience "aud" - intended audience
 // ExpiresAt "exp" - expiration time (Unix)
 // IssuedAt "iat" - issued at (Unix)
-func Claims(subject, issuer, audience, role string, tokenDuration int) jwt.MapClaims {
+func NewMapClaims(subject, issuer, audience, role string, tokenDuration time.Duration) jwt.MapClaims {
 	return jwt.MapClaims{
+		"id":   uuid.New().String(),
 		"sub":  subject,
 		"iss":  issuer,
 		"aud":  audience,
@@ -26,4 +28,34 @@ func Claims(subject, issuer, audience, role string, tokenDuration int) jwt.MapCl
 		"iat":  time.Now().Unix(),
 		"role": role,
 	}
+}
+
+// NewClaims is a jwt.MapClaims constructor.
+//
+// It holds the following attributes:
+// Subject "sub" - user ID
+// Issuer "iss" - token issuer
+// Audience "aud" - intended audience
+// ExpiresAt "exp" - expiration time (Unix)
+// IssuedAt "iat" - issued at (Unix)
+func NewClaims(subject, issuer, audience, role string, tokenDuration int) Claims {
+	return Claims{
+		ID:        uuid.NewString(),
+		Subject:   subject,
+		Issuer:    issuer,
+		Audience:  audience,
+		Role:      role,
+		IssuedAt:  time.Now().Unix(),
+		ExpiredAt: time.Now().Add(time.Duration(tokenDuration) * time.Second).Unix(),
+	}
+}
+
+type Claims struct {
+	ID        string `json:"id"`
+	Subject   string `json:"sub"`
+	Issuer    string `json:"iss"`
+	Audience  string `json:"aud"`
+	ExpiredAt int64  `json:"exp"`
+	IssuedAt  int64  `json:"iat"`
+	Role      string `json:"role"`
 }
