@@ -28,10 +28,6 @@ func generateToken(secret, role string) (string, error) {
 
 func TestJWT_Middleware(t *testing.T) {
 	jwtSecret := "secret"
-	auth := authentication.Auth{
-		SigningMethod: jwt.SigningMethodHS256,
-		ClaimsKey:     "secret",
-	}
 
 	tests := []struct {
 		name           string
@@ -94,11 +90,12 @@ func TestJWT_Middleware(t *testing.T) {
 			// Create JWT middleware
 			jwtMiddleware := New(
 				"admin",                                  // Admin role
-				jwtSecret,                                // Token secret
-				3600,                                     // Token max age
 				tt.skipList,                              // Skip list
 				map[string][]string{"/admin": {"admin"}}, // Permissions map
-				auth,                                     // authentication struct
+				authentication.Default(
+					jwtSecret, // Token secret
+					3600,      // Token max age
+				),
 			)
 
 			// Create request

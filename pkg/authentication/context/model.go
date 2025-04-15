@@ -1,8 +1,6 @@
 package jwt
 
 import (
-	"time"
-
 	"github.com/ribeirohugo/go_middlewares/pkg/authentication"
 )
 
@@ -23,8 +21,6 @@ type JWT struct {
 	AdminRole      string
 	PermissionsMap map[string][]string
 	SkipList       []string
-	TokenDuration  time.Duration
-	TokenSecret    string
 
 	auth authentication.Auth
 }
@@ -38,8 +34,7 @@ type JWT struct {
 // skipList is the list of endpoints that are ignored for JWT verification.
 // permissionsMap is the list of endpoints, associated to the allowed permission roles.
 func New(
-	adminRole, tokenSecret string,
-	tokenMaxAge int,
+	adminRole string,
 	skipList []string,
 	permissionsMap map[string][]string,
 	authentication authentication.Auth,
@@ -48,8 +43,6 @@ func New(
 		AdminRole:      adminRole,
 		PermissionsMap: permissionsMap,
 		SkipList:       skipList,
-		TokenDuration:  time.Duration(tokenMaxAge),
-		TokenSecret:    tokenSecret,
 		auth:           authentication,
 	}
 }
