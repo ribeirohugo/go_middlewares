@@ -6,8 +6,9 @@ import (
 	"testing"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/ribeirohugo/go_middlewares/pkg/authentication"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/ribeirohugo/go_middlewares/pkg/authentication"
 )
 
 // Mock handler to test middleware behavior
@@ -27,6 +28,10 @@ func generateToken(secret, role string) (string, error) {
 
 func TestJWT_Middleware(t *testing.T) {
 	jwtSecret := "secret"
+	auth := authentication.Auth{
+		SigningMethod: jwt.SigningMethodHS256,
+		ClaimsKey:     "secret",
+	}
 
 	tests := []struct {
 		name           string
@@ -91,14 +96,13 @@ func TestJWT_Middleware(t *testing.T) {
 				"admin",                                  // Admin role
 				jwtSecret,                                // Token secret
 				3600,                                     // Token max age
-				"claims",                                 // Claims key
 				tt.skipList,                              // Skip list
 				map[string][]string{"/admin": {"admin"}}, // Permissions map
-				authentication.Auth{},
+				auth,                                     // authentication struct
 			)
 
 			// Create request
-			req, err := http.NewRequest("GET", tt.requestPath, nil)
+			req, err := http.NewRequest(http.MethodGet, tt.requestPath, nil)
 			if err != nil {
 				t.Fatalf("could not create request: %v", err)
 			}

@@ -21,7 +21,6 @@ const (
 // permissionsMap is the list of endpoints, associated to the allowed permission roles.
 type JWT struct {
 	AdminRole      string
-	ClaimsKey      any
 	PermissionsMap map[string][]string
 	SkipList       []string
 	TokenDuration  time.Duration
@@ -41,18 +40,16 @@ type JWT struct {
 func New(
 	adminRole, tokenSecret string,
 	tokenMaxAge int,
-	claimsKey any,
 	skipList []string,
 	permissionsMap map[string][]string,
-	auth authentication.Auth,
+	authentication authentication.Auth,
 ) JWT {
 	return JWT{
 		AdminRole:      adminRole,
-		ClaimsKey:      claimsKey,
 		PermissionsMap: permissionsMap,
 		SkipList:       skipList,
 		TokenDuration:  time.Duration(tokenMaxAge),
 		TokenSecret:    tokenSecret,
-		auth:           auth,
+		auth:           authentication,
 	}
 }
