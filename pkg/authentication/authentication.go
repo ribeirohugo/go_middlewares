@@ -36,7 +36,7 @@ func Default(token string, tokenDuration int) Auth {
 func (a *Auth) SignedToken(claims jwt.MapClaims) (string, error) {
 	token := jwt.NewWithClaims(a.SigningMethod, claims)
 
-	return token.SignedString([]byte(a.ClaimsKey))
+	return token.SignedString([]byte(a.TokenSecret))
 }
 
 // ClaimsSignedToken SignedToken generates and signs a JWT using the provided secret and claims.
