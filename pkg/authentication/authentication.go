@@ -2,6 +2,7 @@ package authentication
 
 import (
 	"context"
+	"net/http"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -15,11 +16,12 @@ type Auth struct {
 	TokenSecret   string
 }
 
-// Authentication interface is the abstraction for authentication layer methods.
-type Authentication interface {
+// JWT defines methods for JWT authentication, including claims extraction, login, logout, and middleware injection.
+type JWT interface {
 	GetClaims(ctx context.Context) (Claims, error)
 	Logout(ctx context.Context) context.Context
 	Login(ctx context.Context, subject, issuer, audience, role string) (string, error)
+	Middleware(next http.Handler) http.Handler
 }
 
 // New is an Auth constructor.
