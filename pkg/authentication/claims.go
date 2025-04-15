@@ -1,6 +1,8 @@
 package authentication
 
 import (
+	"context"
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -68,4 +70,46 @@ func (a *Auth) ClaimsSignedToken(subject, issuer, audience, role string) (string
 	token := jwt.NewWithClaims(a.SigningMethod, claims)
 
 	return token.SignedString([]byte(a.ClaimsKey))
+}
+
+func (a *Auth) ParseClaims(ctx context.Context) (Claims, error) {
+	claims, ok := ctx.Value(a.ClaimsKey).(jwt.MapClaims)
+	if !ok {
+		return Claims{}, fmt.Errorf("token not found in context")
+	}
+
+	sub, err := claims.GetSubject()
+	if err != nil {
+		return Claims{}, fmt.Errorf("subject  wasn't found in claims")
+	}
+
+	role, ok := claims["role"]
+	if !ok {
+		return Claims{}, fmt.Errorf("role wasn't found in claims")
+	}
+
+	issuer, err := claims.GetIssuer()
+	if err != nil {
+		return Claims{}, fmt.Errorf("issuer wasn't found in claims")
+	}
+
+	issuedAt, err := claims.GetIssuedAt()
+	if err != nil {
+		return Claims{}, fmt.Errorf("issuer wasn't found in claims")
+	}
+
+	expirationTime, err := claims.GetExpirationTime()
+	if err != nil {
+		return Claims{}, fmt.Errorf("issuer wasn't found in claims")
+	}
+
+	authClaims := Claims{
+		Subject:   sub,
+		Role:      role.(string),
+		Issuer:    issuer,
+		IssuedAt:  issuedAt.Unix(),
+		ExpiresAt: expirationTime.Unix(),
+	}
+
+	return authClaims, nil
 }
