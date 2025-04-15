@@ -73,10 +73,12 @@ func (a *Auth) ClaimsSignedToken(subject, issuer, audience, role string) (string
 }
 
 func (a *Auth) ParseClaims(ctx context.Context) (Claims, error) {
-	claims, ok := ctx.Value(a.ClaimsKey).(jwt.MapClaims)
+	ptrClaims, ok := ctx.Value(a.ClaimsKey).(*jwt.MapClaims)
 	if !ok {
 		return Claims{}, fmt.Errorf("token not found in context")
 	}
+
+	claims := *ptrClaims
 
 	sub, err := claims.GetSubject()
 	if err != nil {
