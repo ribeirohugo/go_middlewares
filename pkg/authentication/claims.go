@@ -10,6 +10,17 @@ import (
 // ClaimsKey is a custom context key for storing JWT claims.
 type ClaimsKey string
 
+// Claims defines the JWT payload with standard claims and a custom user role.
+type Claims struct {
+	ID        string `json:"id"`
+	Subject   string `json:"sub"`
+	Issuer    string `json:"iss"`
+	Audience  string `json:"aud"`
+	ExpiredAt int64  `json:"exp"`
+	IssuedAt  int64  `json:"iat"`
+	Role      string `json:"role"`
+}
+
 // NewMapClaims is a jwt.MapClaims constructor.
 //
 // It holds the following attributes:
@@ -50,13 +61,11 @@ func NewClaims(subject, issuer, audience, role string, tokenDuration int) Claims
 	}
 }
 
-// Claims defines the JWT payload with standard claims and a custom user role.
-type Claims struct {
-	ID        string `json:"id"`
-	Subject   string `json:"sub"`
-	Issuer    string `json:"iss"`
-	Audience  string `json:"aud"`
-	ExpiredAt int64  `json:"exp"`
-	IssuedAt  int64  `json:"iat"`
-	Role      string `json:"role"`
+// ClaimsSignedToken SignedToken generates and signs a JWT using the provided secret and claims.
+func (a *Auth) ClaimsSignedToken(subject, issuer, audience, role string) (string, error) {
+	claims := NewMapClaims(subject, issuer, audience, role, a.TokenDuration)
+
+	token := jwt.NewWithClaims(a.SigningMethod, claims)
+
+	return token.SignedString([]byte(a.ClaimsKey))
 }

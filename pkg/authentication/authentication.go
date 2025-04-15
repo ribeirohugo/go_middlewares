@@ -38,12 +38,3 @@ func (a *Auth) SignedToken(claims jwt.MapClaims) (string, error) {
 
 	return token.SignedString([]byte(a.TokenSecret))
 }
-
-// ClaimsSignedToken SignedToken generates and signs a JWT using the provided secret and claims.
-func (a *Auth) ClaimsSignedToken(subject, issuer, audience, role string) (string, error) {
-	claims := NewMapClaims(subject, issuer, audience, role, a.TokenDuration)
-
-	token := jwt.NewWithClaims(a.SigningMethod, claims)
-
-	return token.SignedString([]byte(a.TokenSecret))
-}
