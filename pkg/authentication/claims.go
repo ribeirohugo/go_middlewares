@@ -51,7 +51,7 @@ func NewMapClaims(subject, issuer, audience, role string, tokenDuration time.Dur
 // Audience "aud" - intended audience
 // ExpiresAt "exp" - expiration time (Unix)
 // IssuedAt "iat" - issued at (Unix)
-func NewClaims(subject, issuer, audience, role string, tokenDuration int) Claims {
+func NewClaims(subject, issuer, audience, role string, tokenDuration time.Duration) Claims {
 	return Claims{
 		ID:        uuid.NewString(),
 		Subject:   subject,
@@ -59,7 +59,7 @@ func NewClaims(subject, issuer, audience, role string, tokenDuration int) Claims
 		Audience:  audience,
 		Role:      role,
 		IssuedAt:  time.Now().Unix(),
-		ExpiresAt: time.Now().Add(time.Duration(tokenDuration) * time.Second).Unix(),
+		ExpiresAt: time.Now().Add(tokenDuration * time.Second).Unix(),
 	}
 }
 
