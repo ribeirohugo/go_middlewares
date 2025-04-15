@@ -39,7 +39,7 @@ func (j *JWT) Middleware(next http.Handler) http.Handler {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 			}
 
-			return []byte(j.auth.ClaimsKey), nil
+			return []byte(j.auth.TokenSecret), nil
 		})
 		if err != nil {
 			if err.Error() == "Token is expired" {
