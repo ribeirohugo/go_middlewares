@@ -16,7 +16,7 @@ type Claims struct {
 	Subject   string `json:"sub"`
 	Issuer    string `json:"iss"`
 	Audience  string `json:"aud"`
-	ExpiredAt int64  `json:"exp"`
+	ExpiresAt int64  `json:"exp"`
 	IssuedAt  int64  `json:"iat"`
 	Role      string `json:"role"`
 }
@@ -57,7 +57,7 @@ func NewClaims(subject, issuer, audience, role string, tokenDuration int) Claims
 		Audience:  audience,
 		Role:      role,
 		IssuedAt:  time.Now().Unix(),
-		ExpiredAt: time.Now().Add(time.Duration(tokenDuration) * time.Second).Unix(),
+		ExpiresAt: time.Now().Add(time.Duration(tokenDuration) * time.Second).Unix(),
 	}
 }
 
