@@ -81,6 +81,7 @@ func (j *JWT) checkRolePermissions(r *http.Request, userRole string) bool {
 	for k, roles := range j.PermissionsMap {
 		if strings.HasPrefix(r.URL.Path, k) {
 			hasPrefix = true
+
 			for _, role := range roles {
 				if role == userRole {
 					allowed = true

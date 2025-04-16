@@ -24,6 +24,7 @@ func (j *JWT) GetClaims(ctx context.Context) (authentication.Claims, error) {
 			if err == redis.Nil {
 				return authentication.Claims{}, fmt.Errorf("key does not exist: %v", err)
 			}
+
 			return authentication.Claims{}, fmt.Errorf("redis error: %v", err)
 		}
 	}
@@ -36,7 +37,7 @@ func (j *JWT) Logout(ctx context.Context) context.Context {
 	if j.redis != nil {
 		claims, ok := ctx.Value(j.auth.ClaimsKey).(*authentication.Claims)
 		if ok && claims != nil && claims.ExpiresAt > 0 {
-			remainingTTL := time.Unix(claims.ExpiresAt, 0).Sub(time.Now())
+			remainingTTL := time.Until(time.Unix(claims.ExpiresAt, 0))
 
 			if remainingTTL > 0 {
 				j.redis.Del(ctx, claims.ID)
