@@ -36,3 +36,16 @@ logging for better observability and debugging.
 It captures key request details, such as the request method, URL, and remote address, allowing for distributed
 tracing and improved observability. By integrating with OpenTelemetry, this middleware helps track request flows
 across services, making it easier to debug performance bottlenecks and failures.
+
+## 2. Authentication package
+
+[Authentication](pkg/authentication) is an authentication package that uses claims and JWT to manage user
+authentication.
+
+## 2.1. Context JWT Authentication
+[Authentication](pkg/authentication/context) is a middleware that uses JWT tokens to validate uses authentication
+using context and claims.
+
+## 2.2. Redis JWT Authentication
+[Authentication](pkg/authentication/redis) is a middleware that uses context claims with Redis cache to validate
+JWT logged in tokens.
