@@ -42,6 +42,10 @@ across services, making it easier to debug performance bottlenecks and failures.
 [Authentication](pkg/authentication) is an authentication package that uses claims and JWT to manage user
 authentication.
 
+It holds a middleware subpackages for handling JSON Web Tokens (JWT) to securely authenticate and authorize
+HTTP and HTTPS requests, ensuring that only valid and properly signed tokens are processed for
+access control and user verification.
+
 ## 2.1. Context JWT Authentication
 [Authentication](pkg/authentication/context) is a middleware that uses JWT tokens to validate uses authentication
 using context and claims.
