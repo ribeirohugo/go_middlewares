@@ -47,7 +47,7 @@ HTTP and HTTPS requests, ensuring that only valid and properly signed tokens are
 access control and user verification.
 
 ## 2.1. Context JWT Authentication
-[Authentication](pkg/authentication/context) is a middleware that uses JWT tokens to validate uses authentication
+[Authentication](pkg/authentication/context) is a middleware that uses JWT tokens to validate users authentication
 using context and claims.
 
 ## 2.2. Redis JWT Authentication
