@@ -19,7 +19,7 @@ func (j *JWT) GetClaims(ctx context.Context) (authentication.Claims, error) {
 	}
 
 	if j.redis != nil {
-		_, err := j.redis.Get(ctx, claims.ID).Result()
+		_, err = j.redis.Get(ctx, claims.ID).Result()
 		if err != nil {
 			if err == redis.Nil {
 				return authentication.Claims{}, fmt.Errorf("key does not exist: %v", err)
@@ -58,7 +58,10 @@ func (j *JWT) Login(ctx context.Context, subject, issuer, audience, role string)
 	}
 
 	if j.redis != nil {
-		j.redis.Set(ctx, claims["id"].(string), claims, j.auth.TokenDuration)
+		err = j.redis.Set(ctx, claims["id"].(string), tokenString, j.auth.TokenDuration).Err()
+		if err != nil {
+			return "", fmt.Errorf("redis set failed: %v", err)
+		}
 	}
 
 	return tokenString, nil

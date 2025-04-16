@@ -3,47 +3,67 @@ package jwt
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
 
+	"github.com/golang-jwt/jwt/v5"
+
 	"github.com/ribeirohugo/go_middlewares/internal/model"
 )
 
-// Middleware handles JWT authentication with Redis caching.
+// Middleware handles JWT authentication in server requests.
 func (j *JWT) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		for _, skip := range j.SkipList {
-			if strings.HasPrefix(r.URL.Path, skip) {
+		authHeader := r.Header.Get("Authorization")
+
+		for i := range j.SkipList {
+			if strings.HasPrefix(r.URL.Path, j.SkipList[i]) {
+				// Skip JWT verification for endpoint requests
 				next.ServeHTTP(w, r)
 				return
 			}
 		}
 
-		authHeader := r.Header.Get("Authorization")
-		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+		tokenString := strings.Replace(authHeader, "Bearer ", "", 1)
 		if tokenString == "" {
 			j.error(w, unauthorizedMessage)
 			return
 		}
 
-		ctx := r.Context()
+		jwtClaims := jwt.MapClaims{}
 
-		claims, err := j.auth.ParseClaims(ctx)
-		if err != nil {
-			if strings.Contains(err.Error(), "expired") {
-				j.error(w, expiredTokenMessage)
-			} else {
-				log.Println("JWT parse error:", err)
-				j.error(w, unauthorizedMessage)
+		token, err := jwt.ParseWithClaims(tokenString, &jwtClaims, func(token *jwt.Token) (any, error) {
+			if token.Method.Alg() != j.auth.SigningMethod.Alg() {
+				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 			}
+
+			return []byte(j.auth.ClaimsKey), nil
+		})
+		if err != nil {
+			if err.Error() == "Token is expired" {
+				j.error(w, expiredTokenMessage)
+				return
+			}
+
+			log.Println(err)
+			j.error(w, unauthorizedMessage)
+
 			return
 		}
 
-		if j.checkRolePermissions(r, claims.Role) {
-			ctx := context.WithValue(r.Context(), j.ClaimsKey, claims)
-			next.ServeHTTP(w, r.WithContext(ctx))
-			return
+		if claims, ok := token.Claims.(*jwt.MapClaims); ok {
+			userRole, ok := jwtClaims["role"]
+			if ok {
+				if j.checkRolePermissions(r, userRole.(string)) {
+					// Store the claims in the request context for use in the handler.
+					ctx := context.WithValue(r.Context(), j.auth.ClaimsKey, claims)
+					next.ServeHTTP(w, r.WithContext(ctx))
+
+					return
+				}
+			}
 		}
 
 		j.error(w, unauthorizedMessage)

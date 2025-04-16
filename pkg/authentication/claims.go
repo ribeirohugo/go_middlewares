@@ -85,6 +85,11 @@ func (a *Auth) ParseClaims(ctx context.Context) (Claims, error) {
 		return Claims{}, fmt.Errorf("subject  wasn't found in claims")
 	}
 
+	id, ok := claims["id"]
+	if !ok {
+		return Claims{}, fmt.Errorf("id wasn't found in claims")
+	}
+
 	role, ok := claims["role"]
 	if !ok {
 		return Claims{}, fmt.Errorf("role wasn't found in claims")
@@ -106,6 +111,7 @@ func (a *Auth) ParseClaims(ctx context.Context) (Claims, error) {
 	}
 
 	authClaims := Claims{
+		ID:        id.(string),
 		Subject:   sub,
 		Role:      role.(string),
 		Issuer:    issuer,
