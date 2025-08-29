@@ -128,7 +128,11 @@ func (l *Loki) Push(level, body string) error {
 func (l *Loki) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		msg := fmt.Sprintf("%s - %s %s", r.URL.String(), r.Method, r.RemoteAddr)
-		_ = l.Push(Info, msg)
+
+		err := l.Push(Info, msg)
+		if err != nil {
+			log.Println("push error: ", err.Error())
+		}
 
 		next.ServeHTTP(w, r)
 	})
