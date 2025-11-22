@@ -3,7 +3,6 @@ package jwt
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/redis/go-redis/v9"
@@ -36,12 +35,8 @@ func (j *JWT) GetClaims(ctx context.Context) (authentication.Claims, error) {
 func (j *JWT) Logout(ctx context.Context) context.Context {
 	if j.redis != nil {
 		claims, ok := ctx.Value(j.auth.ClaimsKey).(*authentication.Claims)
-		if ok && claims != nil && claims.ExpiresAt > 0 {
-			remainingTTL := time.Until(time.Unix(claims.ExpiresAt, 0))
-
-			if remainingTTL > 0 {
-				j.redis.Del(ctx, claims.ID)
-			}
+		if ok && claims != nil {
+			j.redis.Del(ctx, claims.ID)
 		}
 	}
 
