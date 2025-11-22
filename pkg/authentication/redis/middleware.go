@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/ribeirohugo/go_middlewares/internal/model"
 )
@@ -54,6 +55,33 @@ func (j *JWT) Middleware(next http.Handler) http.Handler {
 		}
 
 		if claims, ok := token.Claims.(*jwt.MapClaims); ok {
+			// Check if token exists in Redis
+			if j.redis != nil {
+				claimID, idExists := jwtClaims["id"]
+				if !idExists {
+					log.Println("token id not found in claims")
+					j.error(w, unauthorizedMessage)
+
+					return
+				}
+
+				// Verify the token exists in Redis
+				_, err := j.redis.Get(r.Context(), claimID.(string)).Result()
+				if err != nil {
+					if err == redis.Nil {
+						log.Println("token not found in redis")
+						j.error(w, unauthorizedMessage)
+
+						return
+					}
+
+					log.Println("redis error:", err)
+					j.error(w, unauthorizedMessage)
+
+					return
+				}
+			}
+
 			userRole, ok := jwtClaims["role"]
 			if ok {
 				if j.checkRolePermissions(r, userRole.(string)) {
