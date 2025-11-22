@@ -61,6 +61,7 @@ func (j *JWT) Middleware(next http.Handler) http.Handler {
 				if !idExists {
 					log.Println("token id not found in claims")
 					j.error(w, unauthorizedMessage)
+
 					return
 				}
 
@@ -70,11 +71,13 @@ func (j *JWT) Middleware(next http.Handler) http.Handler {
 					if err == redis.Nil {
 						log.Println("token not found in redis")
 						j.error(w, unauthorizedMessage)
+
 						return
 					}
 
 					log.Println("redis error:", err)
 					j.error(w, unauthorizedMessage)
+
 					return
 				}
 			}
