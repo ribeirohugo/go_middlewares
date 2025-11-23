@@ -54,6 +54,14 @@ func (j *JWT) Middleware(next http.Handler) http.Handler {
 		}
 
 		if claims, ok := token.Claims.(*jwt.MapClaims); ok {
+			// Check if token is blacklisted
+			if tokenID, exists := (*claims)["id"]; exists {
+				if j.isBlacklisted(tokenID.(string)) {
+					j.error(w, expiredTokenMessage)
+					return
+				}
+			}
+
 			userRole, ok := jwtClaims["role"]
 			if ok {
 				if j.checkRolePermissions(r, userRole.(string)) {
