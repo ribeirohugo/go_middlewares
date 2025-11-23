@@ -32,17 +32,17 @@ func (j *JWT) GetClaims(ctx context.Context) (authentication.Claims, error) {
 }
 
 // Logout removes claims from the context, effectively logging the user out.
-func (j *JWT) Logout(ctx context.Context) context.Context {
+func (j *JWT) Logout(ctx context.Context) (context.Context, error) {
 	if j.redis != nil {
 		claims, err := j.GetClaims(ctx)
 		if err != nil {
-			return ctx
+			return ctx, err
 		}
 
 		j.redis.Del(ctx, claims.ID)
 	}
 
-	return context.WithValue(ctx, j.auth.ClaimsKey, nil)
+	return context.WithValue(ctx, j.auth.ClaimsKey, nil), nil
 }
 
 func (j *JWT) Login(ctx context.Context, subject, issuer, audience, role string) (string, error) {
