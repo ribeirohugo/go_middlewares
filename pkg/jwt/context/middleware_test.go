@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/assert"
@@ -135,7 +136,7 @@ func TestJWT_Middleware_Blacklist(t *testing.T) {
 		auth := jwtAuth.Auth{
 			ClaimsKey:     "test-secret",
 			SigningMethod: jwt.SigningMethodHS256,
-			TokenDuration: 3600,
+			TokenDuration: time.Hour,
 		}
 		jwtMiddleware := New("admin", []string{}, map[string][]string{}, auth)
 
@@ -169,7 +170,7 @@ func TestJWT_Middleware_Blacklist(t *testing.T) {
 
 		// Token should be rejected
 		assert.Equal(t, http.StatusUnauthorized, rr2.Code, "Token should be rejected after logout")
-		assert.Contains(t, rr2.Body.String(), "token has been revoked")
+		assert.Contains(t, rr2.Body.String(), expiredTokenMessage)
 	})
 
 	t.Run("should allow new token after logout of old token", func(t *testing.T) {
@@ -177,7 +178,7 @@ func TestJWT_Middleware_Blacklist(t *testing.T) {
 		auth := jwtAuth.Auth{
 			ClaimsKey:     "test-secret",
 			SigningMethod: jwt.SigningMethodHS256,
-			TokenDuration: 3600,
+			TokenDuration: time.Hour,
 		}
 		jwtMiddleware := New("admin", []string{}, map[string][]string{}, auth)
 
@@ -208,4 +209,3 @@ func TestJWT_Middleware_Blacklist(t *testing.T) {
 		assert.Equal(t, http.StatusOK, rr.Code, "New token should work")
 	})
 }
-
