@@ -19,7 +19,7 @@ type Auth struct {
 // JWT defines methods for JWT authentication, including claims extraction, login, logout, and middleware injection.
 type JWT interface {
 	GetClaims(ctx context.Context) (Claims, error)
-	Logout(ctx context.Context) context.Context
+	Logout(ctx context.Context) (context.Context, error)
 	Login(ctx context.Context, subject, issuer, audience, role string) (string, error)
 	Middleware(next http.Handler) http.Handler
 }
