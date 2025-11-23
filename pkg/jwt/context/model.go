@@ -1,6 +1,9 @@
 package context
 
 import (
+	"sync"
+	"time"
+
 	jwtAuth "github.com/ribeirohugo/go_middlewares/pkg/jwt"
 )
 
@@ -17,12 +20,16 @@ const (
 // tokenMaxAge is the max duration of a token, in nanoseconds.
 // skipList is the list of endpoints that are ignored for JWT verification.
 // permissionsMap is the list of endpoints, associated to the allowed permission roles.
+// blacklist is an in-memory map to store blacklisted token IDs with their expiration time.
+// mu protects concurrent access to the blacklist map.
 type JWT struct {
 	AdminRole      string
 	PermissionsMap map[string][]string
 	SkipList       []string
 
-	auth jwtAuth.Auth
+	auth      jwtAuth.Auth
+	blacklist map[string]time.Time
+	mu        sync.RWMutex
 }
 
 // New is a JWT middleware constructor.
@@ -44,5 +51,6 @@ func New(
 		PermissionsMap: permissionsMap,
 		SkipList:       skipList,
 		auth:           authentication,
+		blacklist:      make(map[string]time.Time),
 	}
 }
