@@ -1,6 +1,7 @@
 package context
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -127,3 +128,84 @@ func TestJWT_Middleware(t *testing.T) {
 		})
 	}
 }
+
+func TestJWT_Middleware_Blacklist(t *testing.T) {
+	t.Run("should reject blacklisted token after logout", func(t *testing.T) {
+		// Arrange
+		auth := jwtAuth.Auth{
+			ClaimsKey:     "test-secret",
+			SigningMethod: jwt.SigningMethodHS256,
+			TokenDuration: 3600,
+		}
+		jwtMiddleware := New("admin", []string{}, map[string][]string{}, auth)
+
+		// Create a token
+		tokenString, err := jwtMiddleware.Login(nil, "user123", "service", "app", "admin")
+		assert.NoError(t, err)
+
+		// Verify token works before logout
+		req1 := httptest.NewRequest(http.MethodGet, "/api/test", nil)
+		req1.Header.Add("Authorization", "Bearer "+tokenString)
+		rr1 := httptest.NewRecorder()
+		jwtMiddleware.Middleware(mockHandler()).ServeHTTP(rr1, req1)
+		assert.Equal(t, http.StatusOK, rr1.Code, "Token should work before logout")
+
+		// Parse token to get claims for logout
+		token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			return []byte(auth.ClaimsKey), nil
+		})
+		claims := token.Claims.(jwt.MapClaims)
+		ctx := context.WithValue(context.Background(), auth.ClaimsKey, &claims)
+
+		// Logout - this should blacklist the token
+		_, err = jwtMiddleware.Logout(ctx)
+		assert.NoError(t, err)
+
+		// Try to use the same token after logout
+		req2 := httptest.NewRequest(http.MethodGet, "/api/test", nil)
+		req2.Header.Add("Authorization", "Bearer "+tokenString)
+		rr2 := httptest.NewRecorder()
+		jwtMiddleware.Middleware(mockHandler()).ServeHTTP(rr2, req2)
+
+		// Token should be rejected
+		assert.Equal(t, http.StatusUnauthorized, rr2.Code, "Token should be rejected after logout")
+		assert.Contains(t, rr2.Body.String(), "token has been revoked")
+	})
+
+	t.Run("should allow new token after logout of old token", func(t *testing.T) {
+		// Arrange
+		auth := jwtAuth.Auth{
+			ClaimsKey:     "test-secret",
+			SigningMethod: jwt.SigningMethodHS256,
+			TokenDuration: 3600,
+		}
+		jwtMiddleware := New("admin", []string{}, map[string][]string{}, auth)
+
+		// Create first token
+		token1, err := jwtMiddleware.Login(nil, "user123", "service", "app", "admin")
+		assert.NoError(t, err)
+
+		// Parse token to get claims for logout
+		parsedToken, _ := jwt.Parse(token1, func(token *jwt.Token) (interface{}, error) {
+			return []byte(auth.ClaimsKey), nil
+		})
+		claims := parsedToken.Claims.(jwt.MapClaims)
+		ctx := context.WithValue(context.Background(), auth.ClaimsKey, &claims)
+
+		// Logout first token
+		_, err = jwtMiddleware.Logout(ctx)
+		assert.NoError(t, err)
+
+		// Create a new token for the same user
+		token2, err := jwtMiddleware.Login(nil, "user123", "service", "app", "admin")
+		assert.NoError(t, err)
+
+		// New token should work
+		req := httptest.NewRequest(http.MethodGet, "/api/test", nil)
+		req.Header.Add("Authorization", "Bearer "+token2)
+		rr := httptest.NewRecorder()
+		jwtMiddleware.Middleware(mockHandler()).ServeHTTP(rr, req)
+		assert.Equal(t, http.StatusOK, rr.Code, "New token should work")
+	})
+}
+
