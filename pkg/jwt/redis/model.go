@@ -1,7 +1,9 @@
-package jwt
+package redis
 
 import (
-	"github.com/ribeirohugo/go_middlewares/pkg/authentication"
+	"github.com/redis/go-redis/v9"
+
+	jwtAuth "github.com/ribeirohugo/go_middlewares/pkg/jwt"
 )
 
 const (
@@ -19,10 +21,12 @@ const (
 // permissionsMap is the list of endpoints, associated to the allowed permission roles.
 type JWT struct {
 	AdminRole      string
+	ClaimsKey      any
 	PermissionsMap map[string][]string
 	SkipList       []string
 
-	auth authentication.Auth
+	auth  jwtAuth.Auth
+	redis *redis.Client
 }
 
 // New is a JWT middleware constructor.
@@ -37,12 +41,14 @@ func New(
 	adminRole string,
 	skipList []string,
 	permissionsMap map[string][]string,
-	authentication authentication.Auth,
+	authentication jwtAuth.Auth,
+	redisClient *redis.Client,
 ) JWT {
 	return JWT{
 		AdminRole:      adminRole,
 		PermissionsMap: permissionsMap,
 		SkipList:       skipList,
 		auth:           authentication,
+		redis:          redisClient,
 	}
 }

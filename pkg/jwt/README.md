@@ -1,83 +1,258 @@
-# JWT Middleware Documentation
+# JWT Middleware
 
 ## Overview
-The JWT middleware provides authentication and authorization mechanisms for HTTP requests by validating JWT tokens. It ensures secure access to protected endpoints based on user roles and permissions.
+This package provides JWT (JSON Web Token) authentication middleware for Go applications. It includes support for token generation, validation, role-based access control (RBAC), and optional Redis-backed token storage for enhanced security.
 
 ## Features
-- Validates JWT tokens in the `Authorization` header.
-- Skips verification for specified endpoints.
-- Checks user roles against endpoint-specific permissions.
-- Supports an admin role with full access.
-- Returns appropriate error responses for unauthorized or expired tokens.
+- JWT token generation and validation
+- Role-based access control (RBAC) with permission mapping
+- Support for custom signing methods (default: HS256)
+- Optional Redis integration for token management and revocation
+- Context-based token storage
+- Skip list for public endpoints
+- Token expiration handling
+- Admin role bypass for permission checks
+
+## Installation
+
+```sh
+go get github.com/ribeirohugo/go_middlewares/pkg/jwt
+```
+
+## Package Structure
+
+The JWT package is organized into two main implementations:
+
+- **`context`**: JWT middleware with context-based token storage
+- **`redis`**: JWT middleware with Redis-backed token storage for distributed applications
 
 ## Usage
 
-### Middleware Constructor
+### Basic Setup
+
+#### 1. Initialize JWT Authentication
+
 ```go
-jwtMiddleware := jwt.New(
-    "admin",           // Admin role
-    "userClaims",      // Claims key
-    "supersecret",     // Token secret key
-    3600,               // Token duration in seconds
-    []string{"/public"}, // Skip list (endpoints that bypass JWT check)
-    map[string][]string{
-        "/admin": {"admin"},
-        "/user":  {"user", "admin"},
-    },
+import (
+	"github.com/golang-jwt/jwt/v5"
+	jwtAuth "github.com/ribeirohugo/go_middlewares/pkg/jwt"
 )
-```
-This initializes the middleware with role-based access control.
 
-### Applying Middleware
+// Create authentication configuration
+auth := jwtAuth.New("your-secret-key", 3600, jwt.SigningMethodHS256)
+
+// Or use default signing method (HS256)
+auth := jwtAuth.Default("your-secret-key", 3600)
+```
+
+### Context-Based JWT Middleware
+
+Use this implementation for single-instance applications where tokens are stored in request context.
+
 ```go
-handler := jwtMiddleware.Middleware(http.HandlerFunc(yourHandler))
-http.Handle("/secure", handler)
-```
-Wrap your HTTP handler with the JWT middleware before serving requests.
+import (
+	jwtContext "github.com/ribeirohugo/go_middlewares/pkg/jwt/context"
+)
 
-## Behavior
+func main() {
+	// Define admin role
+	adminRole := "admin"
 
-| Scenario                        | Expected Behavior                                                |
-|---------------------------------|------------------------------------------------------------------|
-| Valid token and authorized role | Proceeds with request handling                                   |
-| Expired token                   | Responds with `401 Unauthorized` and `token has expired` message |
-| No token provided               | Responds with `401 Unauthorized` and `unauthorized` message      |
-| Unauthorized role               | Responds with `401 Unauthorized`                                 |
-| Skipped endpoint                | Request proceeds without JWT verification                        |
+	// Define endpoints that skip JWT validation
+	skipList := []string{
+		"/public",
+		"/health",
+		"/login",
+	}
 
-## Example Requests & Responses
+	// Define role-based permissions for specific endpoints
+	permissionsMap := map[string][]string{
+		"/api/users":   {"admin", "user"},
+		"/api/reports": {"admin"},
+	}
 
-### Valid Request
-**Request:**
-```
-Authorization: Bearer valid.jwt.token
-```
-**Response:**
-```
-HTTP 200 OK
-```
+	// Initialize JWT middleware
+	jwtMiddleware := jwtContext.New(
+		adminRole,
+		skipList,
+		permissionsMap,
+		auth,
+	)
 
-### Expired Token
-**Response:**
-```
-HTTP 401 Unauthorized
-{
-    "message": "token has expired"
+	// Apply middleware to your handlers
+	mux := http.NewServeMux()
+	mux.Handle("/api/protected", jwtMiddleware.Middleware(http.HandlerFunc(protectedHandler)))
+
+	http.ListenAndServe(":8080", mux)
 }
 ```
 
-### Unauthorized Role
-**Response:**
-```
-HTTP 401 Unauthorized
-{
-    "message": "Unauthorized"
+### Redis-Based JWT Middleware
+
+Use this implementation for distributed applications where tokens need to be shared across multiple instances or require revocation capabilities.
+
+```go
+import (
+	"github.com/redis/go-redis/v9"
+	jwtRedis "github.com/ribeirohugo/go_middlewares/pkg/jwt/redis"
+)
+
+func main() {
+	// Initialize Redis client
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
+
+	// Define configuration (same as context-based)
+	adminRole := "admin"
+	skipList := []string{"/public", "/health", "/login"}
+	permissionsMap := map[string][]string{
+		"/api/users": {"admin", "user"},
+	}
+
+	// Initialize JWT middleware with Redis
+	jwtMiddleware := jwtRedis.New(
+		adminRole,
+		skipList,
+		permissionsMap,
+		auth,
+		redisClient,
+	)
+
+	// Apply middleware
+	mux := http.NewServeMux()
+	mux.Handle("/api/protected", jwtMiddleware.Middleware(http.HandlerFunc(protectedHandler)))
+
+	http.ListenAndServe(":8080", mux)
 }
 ```
 
-### Skipped Endpoint
-If `/public` is in `SkipList`, a request to `/public/data` will bypass JWT verification.
+## Token Operations
 
-## Conclusion
-This JWT middleware ensures secure authentication and authorization for API endpoints.
-Configure roles and permissions as needed to enforce access control effectively.
+### Login (Generate Token)
+
+```go
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+	// Generate JWT token
+	token, err := jwtMiddleware.Login(
+		r.Context(),
+		"user123",           // subject (user ID)
+		"my-service",        // issuer
+		"my-app",            // audience
+		"user",              // role
+	)
+	if err != nil {
+		http.Error(w, "Login failed", http.StatusInternalServerError)
+		return
+	}
+
+	// Return token to client
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"token": token,
+	})
+}
+```
+
+### Get Claims from Request
+
+```go
+func protectedHandler(w http.ResponseWriter, r *http.Request) {
+	// Extract claims from context
+	claims, err := jwtMiddleware.GetClaims(r.Context())
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	// Access claim data
+	userID := claims.Subject
+	role := claims.Role
+	
+	w.Write([]byte(fmt.Sprintf("Hello, user %s with role %s", userID, role)))
+}
+```
+
+### Logout (Revoke Token)
+
+```go
+func logoutHandler(w http.ResponseWriter, r *http.Request) {
+	// Remove token from context/Redis
+	ctx, err := jwtMiddleware.Logout(r.Context())
+	if err != nil {
+		http.Error(w, "Logout failed", http.StatusInternalServerError)
+		return
+	}
+
+	w.Write([]byte("Logged out successfully"))
+}
+```
+
+## Claims Structure
+
+The JWT token contains the following claims:
+
+```go
+type Claims struct {
+	ID        string `json:"id"`        // Unique token ID (UUID)
+	Subject   string `json:"sub"`       // User ID
+	Issuer    string `json:"iss"`       // Token issuer
+	Audience  string `json:"aud"`       // Intended audience
+	ExpiresAt int64  `json:"exp"`       // Expiration time (Unix timestamp)
+	IssuedAt  int64  `json:"iat"`       // Issued at (Unix timestamp)
+	Role      string `json:"role"`      // User role for RBAC
+}
+```
+
+## Role-Based Access Control
+
+### Permission Mapping
+
+Define which roles can access specific endpoints:
+
+```go
+permissionsMap := map[string][]string{
+	"/api/admin":    {"admin"},                    // Only admin
+	"/api/users":    {"admin", "user"},            // Admin and user
+	"/api/reports":  {"admin", "manager"},         // Admin and manager
+}
+```
+
+### Admin Role
+
+The admin role bypasses all permission checks and can access any endpoint (except those in the skip list that don't require authentication).
+
+### Behavior
+
+| Scenario                                       | Expected Behavior                           |
+|------------------------------------------------|---------------------------------------------|
+| Request with valid token and allowed role      | Request proceeds to handler                 |
+| Request with valid token but unauthorized role | `401 Unauthorized`                          |
+| Request with expired token                     | `401 Unauthorized` with "token has expired" |
+| Request without token                          | `401 Unauthorized`                          |
+| Request to endpoint in skip list               | Bypasses JWT validation                     |
+| Admin role accessing any endpoint              | Always allowed                              |
+| Endpoint not in permissions map                | Allowed for all authenticated users         |
+
+## Client Request Example
+
+### Authorization Header
+
+```http
+GET /api/protected HTTP/1.1
+Host: localhost:8080
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+### Using cURL
+
+```bash
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" http://localhost:8080/api/protected
+```
+
+## Error Messages
+
+- `"unauthorized"` - Missing, invalid, or insufficient permissions
+- `"token has expired"` - Token expiration time has passed

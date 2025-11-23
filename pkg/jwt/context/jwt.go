@@ -1,20 +1,20 @@
-package jwt
+package context
 
 import (
 	"context"
 	"fmt"
 
-	"github.com/ribeirohugo/go_middlewares/pkg/authentication"
+	jwtAuth "github.com/ribeirohugo/go_middlewares/pkg/jwt"
 )
 
 // GetClaims allows to extract claims from context.
-func (j *JWT) GetClaims(ctx context.Context) (authentication.Claims, error) {
+func (j *JWT) GetClaims(ctx context.Context) (jwtAuth.Claims, error) {
 	return j.auth.ParseClaims(ctx)
 }
 
 // Logout removes claims from the context, effectively logging the user out.
-func (j *JWT) Logout(ctx context.Context) context.Context {
-	return context.WithValue(ctx, j.auth.ClaimsKey, nil)
+func (j *JWT) Logout(ctx context.Context) (context.Context, error) {
+	return context.WithValue(ctx, j.auth.ClaimsKey, nil), nil
 }
 
 func (j *JWT) Login(_ context.Context, subject, issuer, audience, role string) (string, error) {

@@ -1,4 +1,4 @@
-package jwt
+package context
 
 import (
 	"net/http"
@@ -8,7 +8,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/ribeirohugo/go_middlewares/pkg/authentication"
+	jwtAuth "github.com/ribeirohugo/go_middlewares/pkg/jwt"
 )
 
 // Mock handler to test middleware behavior
@@ -92,7 +92,7 @@ func TestJWT_Middleware(t *testing.T) {
 				"admin",                                  // Admin role
 				tt.skipList,                              // Skip list
 				map[string][]string{"/admin": {"admin"}}, // Permissions map
-				authentication.Default(
+				jwtAuth.Default(
 					jwtSecret, // Token secret
 					3600,      // Token max age
 				),

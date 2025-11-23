@@ -1,4 +1,4 @@
-package jwt
+package context
 
 import (
 	"context"
@@ -7,59 +7,11 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 
 	"github.com/ribeirohugo/go_middlewares/internal/model"
 )
-
-const (
-	expiredTokenMessage = "token has expired"
-	unauthorizedMessage = "unauthorized"
-)
-
-// JWT is a JWTMiddleware that holds authentication data and dependencies.
-//
-// adminRole is the maximum permission role, that allows everything by default.
-// claimsKey is the authentication key used by claims.
-// tokenSecret the secret key to verify the integrity and authenticity of the JWT
-// tokenMaxAge is the max duration of a token, in nanoseconds.
-// skipList is the list of endpoints that are ignored for JWT verification.
-// permissionsMap is the list of endpoints, associated to the allowed permission roles.
-type JWT struct {
-	AdminRole      string
-	ClaimsKey      any
-	PermissionsMap map[string][]string
-	SkipList       []string
-	TokenDuration  time.Duration
-	TokenSecret    string
-}
-
-// New is a JWT middleware constructor.
-//
-// adminRole is the maximum permission role, that allows everything by default.
-// claimsKey is the authentication key used by claims.
-// tokenSecret the secret key to verify the integrity and authenticity of the JWT
-// tokenMaxAge is the max duration of a token, in nanoseconds.
-// skipList is the list of endpoints that are ignored for JWT verification.
-// permissionsMap is the list of endpoints, associated to the allowed permission roles.
-func New(
-	adminRole, tokenSecret string,
-	tokenMaxAge int,
-	claimsKey any,
-	skipList []string,
-	permissionsMap map[string][]string,
-) JWT {
-	return JWT{
-		AdminRole:      adminRole,
-		ClaimsKey:      claimsKey,
-		PermissionsMap: permissionsMap,
-		SkipList:       skipList,
-		TokenDuration:  time.Duration(tokenMaxAge),
-		TokenSecret:    tokenSecret,
-	}
-}
 
 // Middleware handles JWT authentication in server requests.
 func (j *JWT) Middleware(next http.Handler) http.Handler {
@@ -83,11 +35,11 @@ func (j *JWT) Middleware(next http.Handler) http.Handler {
 		jwtClaims := jwt.MapClaims{}
 
 		token, err := jwt.ParseWithClaims(tokenString, &jwtClaims, func(token *jwt.Token) (any, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			if token.Method.Alg() != j.auth.SigningMethod.Alg() {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 			}
 
-			return []byte(j.TokenSecret), nil
+			return []byte(j.auth.ClaimsKey), nil
 		})
 		if err != nil {
 			if err.Error() == "Token is expired" {
@@ -106,7 +58,7 @@ func (j *JWT) Middleware(next http.Handler) http.Handler {
 			if ok {
 				if j.checkRolePermissions(r, userRole.(string)) {
 					// Store the claims in the request context for use in the handler.
-					ctx := context.WithValue(r.Context(), j.ClaimsKey, claims)
+					ctx := context.WithValue(r.Context(), j.auth.ClaimsKey, claims)
 					next.ServeHTTP(w, r.WithContext(ctx))
 
 					return

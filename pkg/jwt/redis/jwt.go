@@ -1,4 +1,4 @@
-package jwt
+package redis
 
 import (
 	"context"
@@ -7,24 +7,24 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/redis/go-redis/v9"
 
-	"github.com/ribeirohugo/go_middlewares/pkg/authentication"
+	jwtAuth "github.com/ribeirohugo/go_middlewares/pkg/jwt"
 )
 
 // GetClaims allows to extract claims from context.
-func (j *JWT) GetClaims(ctx context.Context) (authentication.Claims, error) {
+func (j *JWT) GetClaims(ctx context.Context) (jwtAuth.Claims, error) {
 	claims, err := j.auth.ParseClaims(ctx)
 	if err != nil {
-		return authentication.Claims{}, err
+		return jwtAuth.Claims{}, err
 	}
 
 	if j.redis != nil {
 		_, err = j.redis.Get(ctx, claims.ID).Result()
 		if err != nil {
 			if err == redis.Nil {
-				return authentication.Claims{}, fmt.Errorf("key does not exist: %v", err)
+				return jwtAuth.Claims{}, fmt.Errorf("key does not exist: %v", err)
 			}
 
-			return authentication.Claims{}, fmt.Errorf("redis error: %v", err)
+			return jwtAuth.Claims{}, fmt.Errorf("redis error: %v", err)
 		}
 	}
 
@@ -32,21 +32,21 @@ func (j *JWT) GetClaims(ctx context.Context) (authentication.Claims, error) {
 }
 
 // Logout removes claims from the context, effectively logging the user out.
-func (j *JWT) Logout(ctx context.Context) context.Context {
+func (j *JWT) Logout(ctx context.Context) (context.Context, error) {
 	if j.redis != nil {
 		claims, err := j.GetClaims(ctx)
 		if err != nil {
-			return ctx
+			return ctx, err
 		}
 
 		j.redis.Del(ctx, claims.ID)
 	}
 
-	return context.WithValue(ctx, j.auth.ClaimsKey, nil)
+	return context.WithValue(ctx, j.auth.ClaimsKey, nil), nil
 }
 
 func (j *JWT) Login(ctx context.Context, subject, issuer, audience, role string) (string, error) {
-	claims := authentication.NewMapClaims(subject, issuer, audience, role, j.auth.TokenDuration)
+	claims := jwtAuth.NewMapClaims(subject, issuer, audience, role, j.auth.TokenDuration)
 
 	token := jwt.NewWithClaims(j.auth.SigningMethod, claims)
 
