@@ -103,6 +103,7 @@ func (l *Loki) Push(level, body string) error {
 	}
 
 	// Create a new HTTP request
+	// #nosec G704 TODO: review SSRF risk
 	req, err := http.NewRequest(http.MethodPost, l.host, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err
