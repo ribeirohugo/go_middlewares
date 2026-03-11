@@ -72,6 +72,7 @@ func (a *Auth) ClaimsSignedToken(subject, issuer, audience, role string) (string
 	return token.SignedString([]byte(a.ClaimsKey))
 }
 
+// ParseClaims extracts JWT claims from the request context and maps them into a Claims struct.
 func (a *Auth) ParseClaims(ctx context.Context) (Claims, error) {
 	ptrClaims, ok := ctx.Value(a.ClaimsKey).(*jwt.MapClaims)
 	if !ok {

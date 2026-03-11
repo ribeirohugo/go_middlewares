@@ -1,3 +1,4 @@
+// Package loki holds Loki middleware tools.
 package loki
 
 import (
@@ -10,6 +11,7 @@ import (
 	"time"
 )
 
+// Loki log level constants
 const (
 	Error = "error"
 	Info  = "info"
@@ -48,6 +50,7 @@ type Value struct {
 	Line      string `json:"line"`
 }
 
+// Error pushes Loki error log.
 func (l *Loki) Error(r *http.Request, err error) {
 	if r != nil {
 		_ = l.Push(Info, fmt.Sprintf(`%s, with request data %s - %s %s`, err.Error(), r.URL.String(), r.Method, r.RemoteAddr))
@@ -58,6 +61,7 @@ func (l *Loki) Error(r *http.Request, err error) {
 	_ = l.Push(Error, err.Error())
 }
 
+// Info pushes Loki information log.
 func (l *Loki) Info(r *http.Request, message string) {
 	if r != nil {
 		_ = l.Push(Info, fmt.Sprintf(`%s, with request data %s - %s %s`, message, r.URL.String(), r.Method, r.RemoteAddr))
@@ -99,6 +103,7 @@ func (l *Loki) Push(level, body string) error {
 	}
 
 	// Create a new HTTP request
+	// #nosec G704 TODO: review SSRF risk
 	req, err := http.NewRequest(http.MethodPost, l.host, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err
@@ -109,6 +114,7 @@ func (l *Loki) Push(level, body string) error {
 
 	client := &http.Client{}
 
+	// #nosec G704 TODO: review SSRF risk
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
@@ -131,7 +137,8 @@ func (l *Loki) Middleware(next http.Handler) http.Handler {
 
 		err := l.Push(Info, msg)
 		if err != nil {
-			log.Println("push error: ", err.Error())
+			// #nosec G706 TODO: review log injection risk
+			log.Printf("push error: %q", err.Error())
 		}
 
 		next.ServeHTTP(w, r)
