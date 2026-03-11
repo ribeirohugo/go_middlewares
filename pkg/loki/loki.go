@@ -11,6 +11,7 @@ import (
 	"time"
 )
 
+// Loki log level constants
 const (
 	Error = "error"
 	Info  = "info"
@@ -134,7 +135,7 @@ func (l *Loki) Middleware(next http.Handler) http.Handler {
 
 		err := l.Push(Info, msg)
 		if err != nil {
-			log.Println("push error: ", err.Error())
+			log.Printf("push error: %q", err.Error())
 		}
 
 		next.ServeHTTP(w, r)
