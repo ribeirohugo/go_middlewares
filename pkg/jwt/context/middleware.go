@@ -1,3 +1,4 @@
+//revive:disable var-naming // TODO: fix package naming
 package context
 
 import (

@@ -1,4 +1,6 @@
 // Package context holds JWT middleware using context.
+//
+//revive:disable var-naming // TODO: fix package naming
 package context
 
 import (
