@@ -1,3 +1,4 @@
+// Package redis holds Redis auth middleware.
 package redis
 
 import (
@@ -45,6 +46,8 @@ func (j *JWT) Logout(ctx context.Context) (context.Context, error) {
 	return context.WithValue(ctx, j.auth.ClaimsKey, nil), nil
 }
 
+// Login creates and signs a JWT with the provided claims, optionally storing
+// the token in Redis using the claim ID as the key.
 func (j *JWT) Login(ctx context.Context, subject, issuer, audience, role string) (string, error) {
 	claims := jwtAuth.NewMapClaims(subject, issuer, audience, role, j.auth.TokenDuration)
 

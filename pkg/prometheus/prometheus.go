@@ -1,3 +1,4 @@
+// Package prometheus holds Prometheus middleware tools.
 package prometheus
 
 import (
@@ -64,6 +65,7 @@ func (p Prometheus) Handler(w http.ResponseWriter, r *http.Request) {
 	promhttp.Handler().ServeHTTP(w, r)
 }
 
+// Middleware wraps the given handler with Prometheus middleware.
 func (p Prometheus) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()

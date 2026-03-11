@@ -1,3 +1,4 @@
+// Package context holds JWT middleware using context.
 package context
 
 import (
@@ -64,6 +65,7 @@ func (j *JWT) isBlacklisted(tokenID string) bool {
 	return true
 }
 
+// Login generates and returns a signed JWT token with the provided subject, issuer, audience, and role claims.
 func (j *JWT) Login(_ context.Context, subject, issuer, audience, role string) (string, error) {
 	tokenString, err := j.auth.ClaimsSignedToken(subject, issuer, audience, role)
 	if err != nil {

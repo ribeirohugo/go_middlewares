@@ -1,3 +1,4 @@
+// Package logger holds generic logging methods.
 package logger
 
 import (

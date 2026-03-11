@@ -1,3 +1,4 @@
+// Package tracing middleware is responsible for instrumenting HTTP requests with OpenTelemetry tracing.
 package tracing
 
 import (
@@ -12,6 +13,7 @@ const (
 	serverSpan = "server-request"
 )
 
+// Middleware wraps the given handler with tracing middleware.
 func Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()

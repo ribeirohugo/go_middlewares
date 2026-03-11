@@ -1,3 +1,4 @@
+// Package cors holds CORS middleware.
 package cors
 
 import "net/http"

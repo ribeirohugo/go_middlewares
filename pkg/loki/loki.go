@@ -1,3 +1,4 @@
+// Package loki holds Loki middleware tools.
 package loki
 
 import (
@@ -48,6 +49,7 @@ type Value struct {
 	Line      string `json:"line"`
 }
 
+// Error pushes Loki error log.
 func (l *Loki) Error(r *http.Request, err error) {
 	if r != nil {
 		_ = l.Push(Info, fmt.Sprintf(`%s, with request data %s - %s %s`, err.Error(), r.URL.String(), r.Method, r.RemoteAddr))
@@ -58,6 +60,7 @@ func (l *Loki) Error(r *http.Request, err error) {
 	_ = l.Push(Error, err.Error())
 }
 
+// Info pushes Loki information log.
 func (l *Loki) Info(r *http.Request, message string) {
 	if r != nil {
 		_ = l.Push(Info, fmt.Sprintf(`%s, with request data %s - %s %s`, message, r.URL.String(), r.Method, r.RemoteAddr))

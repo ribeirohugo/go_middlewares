@@ -1,3 +1,4 @@
+// Package provider holds tracing providers.
 package provider
 
 import (

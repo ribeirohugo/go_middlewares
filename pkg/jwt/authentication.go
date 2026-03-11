@@ -1,3 +1,4 @@
+// Package jwt holds JWT authentication structs and functions.
 package jwt
 
 import (
